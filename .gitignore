@@ -1,0 +1,11 @@
+build/
+release/
+.idea/
+.vscode/
+.DS_Store
+data
+.mutagen.yml
+vendor/
+.testchains
+.docs
+maanyappd
