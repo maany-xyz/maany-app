@@ -573,8 +573,8 @@ func New(
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
-	// Epochs keeper
-	app.EpochsKeeper = epochskeeper.NewKeeper(keys[epochstypes.StoreKey]).SetHooks(epochstypes.NewMultiEpochHooks())
+	// Epochs keeper (hooks are set later once all keepers are initialized)
+	app.EpochsKeeper = epochskeeper.NewKeeper(keys[epochstypes.StoreKey])
 
 
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), runtime.EventService{})
