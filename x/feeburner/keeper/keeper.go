@@ -124,31 +124,33 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
     for _, balance := range balances {
         if !balance.IsZero() {
             if balance.Denom == params.NeutronDenom {
-                // Optionally route a portion to incentives gauge
-                toStakeAmt := math.NewInt(0)
-                if k.incentivesKeeper != nil && k.incentivesGaugeID > 0 && k.stakeFraction.IsPositive() {
-                    // Convert SDK Int to osmomath.Int for multiplication with osmomath.Dec
-                    amtOsmo := osmomath.NewIntFromBigInt(balance.Amount.BigInt())
-                    toStakeAmtOsmo := k.stakeFraction.MulInt(amtOsmo).TruncateInt()
-                    if toStakeAmtOsmo.IsPositive() {
-                        // Add to gauge rewards, pulling from the ConsumerRedistribute module account
-                        stakeCoins := sdk.NewCoins(sdk.NewCoin(balance.Denom, toStakeAmtOsmo))
-                        if err := k.incentivesKeeper.AddToGaugeRewards(ctx, moduleAddr, stakeCoins, k.incentivesGaugeID); err != nil {
-                            panic(errors.Wrapf(err, "failed to add fees to incentives gauge"))
+                // Do not burn native consumer fees anymore.
+                // If incentives routing is configured, route ALL native fees to the gauge.
+                if k.incentivesKeeper != nil && k.incentivesGaugeID > 0 {
+                    fullStake := sdk.NewCoins(balance)
+                    if err := k.incentivesKeeper.AddToGaugeRewards(ctx, moduleAddr, fullStake, k.incentivesGaugeID); err != nil {
+                        panic(errors.Wrapf(err, "failed to add fees to incentives gauge"))
+                    }
+                    k.Logger(ctx).Info(
+                        "routed all native consumer fees to incentives gauge",
+                        "gauge_id", k.incentivesGaugeID,
+                        "amount", fullStake.String(),
+                    )
+                } else {
+                    // If no incentives routing configured, send to treasury if set; otherwise keep funds in module.
+                    if params.TreasuryAddress != "" {
+                        addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
+                        if err == nil {
+                            if err := k.bankKeeper.SendCoins(ctx, moduleAddr, addr, sdk.NewCoins(balance)); err != nil {
+                                panic(errors.Wrapf(err, "failed sending native consumer fees to Treasury"))
+                            }
+                            k.Logger(ctx).Info("sent native consumer fees to treasury", "treasury", params.TreasuryAddress, "amount", balance.String())
+                        } else {
+                            k.Logger(ctx).Info("treasury address invalid; keeping native consumer fees in module", "treasury", params.TreasuryAddress, "amount", balance.String())
                         }
-                        // Keep the SDK math Int in sync for subsequent burn subtraction
-                        toStakeAmt = toStakeAmtOsmo
+                    } else {
+                        k.Logger(ctx).Info("no incentives routing or treasury configured; keeping native consumer fees in module", "amount", balance.String())
                     }
-                }
-
-                // Burn the remainder
-                toBurn := balance.Amount.Sub(toStakeAmt)
-                if toBurn.IsPositive() {
-                    burnCoin := sdk.NewCoin(balance.Denom, toBurn)
-                    if err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{burnCoin}); err != nil {
-                        panic(errors.Wrapf(err, "failed to burn NTRN tokens during fee processing"))
-                    }
-                    k.RecordBurnedFees(ctx, burnCoin)
                 }
             } else {
                 fundsForReserve = append(fundsForReserve, balance)
@@ -156,27 +158,29 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
         }
     }
 
-	if len(fundsForReserve) > 0 {
-		addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
-		if err != nil {
+    if len(fundsForReserve) > 0 {
+        addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
+        if err != nil {
 			// there's no way we face this kind of situation in production, since it means the chain is misconfigured
 			// still, in test environments it might be the case when the chain is started without Reserve
 			// in such case we just burn the tokens
-			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForReserve)
-			if err != nil {
-				panic(errors.Wrapf(err, "failed to burn tokens during fee processing"))
-			}
-		} else {
-			err = k.bankKeeper.SendCoins(
-				ctx,
-				moduleAddr, addr,
-				fundsForReserve,
-			)
-			if err != nil {
-				panic(errors.Wrapf(err, "failed sending funds to Reserve"))
-			}
-		}
-	}
+            err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForReserve)
+            if err != nil {
+                panic(errors.Wrapf(err, "failed to burn tokens during fee processing"))
+            }
+            k.Logger(ctx).Info("burned non-native consumer fees (no treasury configured)", "amount", fundsForReserve.String())
+        } else {
+            err = k.bankKeeper.SendCoins(
+                ctx,
+                moduleAddr, addr,
+                fundsForReserve,
+            )
+            if err != nil {
+                panic(errors.Wrapf(err, "failed sending funds to Reserve"))
+            }
+            k.Logger(ctx).Info("sent non-native consumer fees to treasury", "treasury", params.TreasuryAddress, "amount", fundsForReserve.String())
+        }
+    }
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
