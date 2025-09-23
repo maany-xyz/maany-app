@@ -9,3 +9,4 @@ vendor/
 .testchains
 .docs
 maanyappd
+local_net/.maanyappd/
