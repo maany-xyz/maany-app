@@ -1,0 +1,33 @@
+{
+  "genesis_time": "2024-01-01T00:00:00Z",
+  "chain_id": "{{ env.Getenv "CHAIN_ID" }}",
+  "app_state": {
+    "bank": {
+      "denom_metadata": [
+        {
+          "description": "Base denom",
+          "denom_units": [
+            { "denom": "{{ env.Getenv "BASE_DENOM" }}", "exponent": 0 },
+            { "denom": "{{ env.Getenv "DISPLAY_DENOM" }}", "exponent": {{ env.Getenv "DENOM_EXP" }} }
+          ],
+          "base": "{{ env.Getenv "BASE_DENOM" }}",
+          "display": "{{ env.Getenv "DISPLAY_DENOM" }}",
+          "name": "{{ env.Getenv "DISPLAY_DENOM" }}",
+          "symbol": "{{ env.Getenv "DISPLAY_DENOM" }}"
+        }
+      ]
+    },
+    "staking": {
+      "params": {
+        "bond_denom": "{{ env.Getenv "BASE_DENOM" }}"
+      }
+    },
+    "feemarket": {
+      "params": {
+        "fee_denom": "{{ env.Getenv "BASE_DENOM" }}",
+        "min_base_gas_price": "{{ env.Getenv "MIN_GAS_PRICE" }}"
+      }
+    }
+  }
+}
+

@@ -8,5 +8,8 @@ data
 vendor/
 .testchains
 .docs
-maanyappd
+# Ignore built binary at repo root, not the source folder under cmd/
+/maanyappd
+# (optionally Windows binary)
+/maanyappd.exe
 local_net/.maanyappd/

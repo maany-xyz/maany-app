@@ -66,10 +66,10 @@ build_tags_test_binary_comma_sep := $(subst $(empty),$(comma),$(build_tags_test_
 # process linker flags
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=maanyapp \
-		  -X github.com/cosmos/cosmos-sdk/version.AppName=maanyappd \
-		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+			  -X github.com/cosmos/cosmos-sdk/version.AppName=maanyappd \
+			  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+			  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+			  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
