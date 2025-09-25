@@ -1,15 +1,17 @@
 package main
 
 import (
-    "fmt"
     "os"
+
+    servercmd "github.com/cosmos/cosmos-sdk/server/cmd"
+    "github.com/cosmos/cosmos-sdk/version"
+
+    app "github.com/maany-xyz/maany-app/app"
 )
 
-// This is a placeholder binary to keep the repo buildable.
-// The full CLI (init/start/export, etc.) should be restored from your original cmd tree
-// or scaffolded to wire Cosmos SDK server commands to the App in app/.
 func main() {
-    fmt.Fprintln(os.Stderr, "maanyappd CLI is not wired yet in this repository.\n- If you have the original cmd/ contents, remove any .gitignore rules that exclude it and add them back.\n- Otherwise, I can scaffold a minimal Cosmos SDK root command on request.")
-    os.Exit(1)
+    rootCmd, _ := NewRootCmd()
+    if err := servercmd.Execute(rootCmd, version.AppName, app.DefaultNodeHome); err != nil {
+        os.Exit(1)
+    }
 }
-

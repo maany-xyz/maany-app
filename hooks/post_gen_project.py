@@ -134,24 +134,27 @@ def main() -> int:
                     f'ENTRYPOINT ["{BINARY_NAME}"]')
 
     # Scripts: defaults
+    def shell_default(var: str, val: str) -> str:
+        return '${' + var + ':-' + val + '}'
+
     replace_in_file(os.path.join(ROOT, 'network', 'init.sh'),
-                    'BINARY=${BINARY:-maanyappd}', f'BINARY=${{BINARY:-{BINARY_NAME}}}')
+                    'BINARY=${BINARY:-maanyappd}', 'BINARY=' + shell_default('BINARY', BINARY_NAME))
     replace_in_file(os.path.join(ROOT, 'network', 'init.sh'),
-                    'CHAINID=${CHAINID:-test-1}', f'CHAINID=${{CHAINID:-{CHAIN_ID}}}')
+                    'CHAINID=${CHAINID:-test-1}', 'CHAINID=' + shell_default('CHAINID', CHAIN_ID))
     replace_in_file(os.path.join(ROOT, 'network', 'init.sh'),
-                    'STAKEDENOM=${STAKEDENOM:-uapp}', f'STAKEDENOM=${{STAKEDENOM:-{BASE_DENOM}}}')
+                    'STAKEDENOM=${STAKEDENOM:-uapp}', 'STAKEDENOM=' + shell_default('STAKEDENOM', BASE_DENOM))
 
     replace_in_file(os.path.join(ROOT, 'network', 'init-neutrond.sh'),
-                    'BINARY=${BINARY:-maanyappd}', f'BINARY=${{BINARY:-{BINARY_NAME}}}')
+                    'BINARY=${BINARY:-maanyappd}', 'BINARY=' + shell_default('BINARY', BINARY_NAME))
     replace_in_file(os.path.join(ROOT, 'network', 'init-neutrond.sh'),
-                    'CHAINID=${CHAINID:-test-1}', f'CHAINID=${{CHAINID:-{CHAIN_ID}}}')
+                    'CHAINID=${CHAINID:-test-1}', 'CHAINID=' + shell_default('CHAINID', CHAIN_ID))
     replace_in_file(os.path.join(ROOT, 'network', 'init-neutrond.sh'),
-                    'STAKEDENOM=${STAKEDENOM:-uapp}', f'STAKEDENOM=${{STAKEDENOM:-{BASE_DENOM}}}')
+                    'STAKEDENOM=${STAKEDENOM:-uapp}', 'STAKEDENOM=' + shell_default('STAKEDENOM', BASE_DENOM))
     replace_in_file(os.path.join(ROOT, 'network', 'init-neutrond.sh'),
                     '"denom":"uapp"', f'"denom":"{BASE_DENOM}"')
 
     replace_in_file(os.path.join(ROOT, 'network', 'start.sh'),
-                    'BINARY=${BINARY:-maanyappd}', f'BINARY=${{BINARY:-{BINARY_NAME}}}')
+                    'BINARY=${BINARY:-maanyappd}', 'BINARY=' + shell_default('BINARY', BINARY_NAME))
 
     replace_in_file(os.path.join(ROOT, 'contrib', 'statesync.bash'),
                     'maanyappd init test', f'{BINARY_NAME} init test')

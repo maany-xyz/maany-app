@@ -1,0 +1,14 @@
+{
+  "project_name": "Maany App",
+  "project_slug": "maany-app-gen",
+  "module_path": "github.com/maany-xyz/maany-app-gen",
+  "binary_name": "maanyappd",
+  "bech32_main_prefix": "maanyapp",
+  "base_denom": "uapp",
+  "display_denom": "APP",
+  "denom_exponent": 6,
+  "chain_id": "maanyapp-local-1",
+  "min_gas_price": "0.0025",
+  "home_dir_name": ".maanyappd"
+}
+
