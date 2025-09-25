@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package maany.autolp.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
+
+// Params defines the parameters for the autolp module.
+message Params {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+}
+
