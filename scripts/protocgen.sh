@@ -29,6 +29,8 @@ cd ..
 # Keep this list tight; copy only what you need:
 cp -r github.com/maany-xyz/maany-app/osmoutils ./osmoutils || true
 cp -r github.com/maany-xyz/maany-app/x/epochs ./x/ || true
+# autolp module generated code
+cp -r github.com/maany-xyz/maany-app/x/autolp ./x/ || true
 # If you use GAMM or others, add them explicitly:
 # cp -r github.com/maany-xyz/maany-app/x/gamm ./x/ || true
 

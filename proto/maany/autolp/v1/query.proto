@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package maany.autolp.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "maany/autolp/v1/params.proto";
+
+option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/maany/autolp/v1/params";
+  }
+
+  // InterchainAccountAddress resolves the ICA address for an owner/connection/id trio.
+  rpc InterchainAccountAddress(QueryICAAddressRequest) returns (QueryICAAddressResponse) {
+    option (google.api.http).get =
+      "/maany/autolp/v1/{owner_address}/{interchain_account_id}/{connection_id}/ica_address";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryICAAddressRequest {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string owner_address = 1;
+  string interchain_account_id = 2;
+  string connection_id = 3;
+}
+
+message QueryICAAddressResponse {
+  string interchain_account_address = 1;
+}
+

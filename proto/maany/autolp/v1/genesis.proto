@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package maany.autolp.v1;
+
+import "gogoproto/gogo.proto";
+import "maany/autolp/v1/params.proto";
+
+option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
+
+// GenesisState defines the autolp module's genesis state.
+message GenesisState {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+

@@ -161,6 +161,10 @@ import (
 	contractmanagermodulekeeper "github.com/maany-xyz/maany-app/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/maany-xyz/maany-app/x/contractmanager/types"
 
+	"github.com/maany-xyz/maany-app/x/autolp"
+	autolpkeeper "github.com/maany-xyz/maany-app/x/autolp/keeper"
+	autolptypes "github.com/maany-xyz/maany-app/x/autolp/types"
+
 
 	"github.com/maany-xyz/maany-app/x/feeburner"
 	feeburnerkeeper "github.com/maany-xyz/maany-app/x/feeburner/keeper"
@@ -307,6 +311,7 @@ var (
 		feeburner.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
 		cron.AppModuleBasic{},
+		autolp.AppModuleBasic{},
 
 		globalfee.AppModule{},
 
@@ -428,6 +433,7 @@ type App struct {
 	EpochsKeeper        *epochskeeper.Keeper
 	LockupKeeper        *lockupkeeper.Keeper
 	IncentivesKeeper    *incentiveskeeper.Keeper
+	AutolpKeeper        autolpkeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -551,7 +557,8 @@ func New(
 		crontypes.StoreKey, ibcratelimittypes.ModuleName, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey,
 	epochstypes.StoreKey,
 	lockuptypes.StoreKey,
-	incentivestypes.StoreKey,
+		incentivestypes.StoreKey,
+		autolptypes.StoreKey,
 
 
 		globalfeetypes.StoreKey,
@@ -701,6 +708,17 @@ func New(
 
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
+
+	// autolp keeper (uses transfer wrapper and interchaintxs query)
+	app.AutolpKeeper = autolpkeeper.NewKeeper(
+		appCodec,
+		keys[autolptypes.StoreKey],
+		app.TransferKeeper,
+		app.InterchainTxsKeeper,
+		app.ICAControllerKeeper,
+		icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
@@ -941,12 +959,17 @@ func New(
 
 	ibcRouter := ibcporttypes.NewRouter()
 
-	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
+    icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 
-	var icaControllerStack ibcporttypes.IBCModule
-
-    icaControllerStack = interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-    icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, app.ICAControllerKeeper)
+    // Build ICA controller stack: combine interchaintxs and autolp IBC modules, then wrap with ICA controller middleware.
+    var icaControllerStack ibcporttypes.IBCModule
+    {
+        base := interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
+        // autolp IBC for event hooks
+        autolpIBC := autolp.NewIBCModule(app.AutolpKeeper)
+        combined := autolp.CombineIBCModules(base, autolpIBC)
+        icaControllerStack = icacontroller.NewIBCMiddleware(combined, app.ICAControllerKeeper)
+    }
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
@@ -1014,6 +1037,7 @@ func New(
 		ibcRateLimitmodule,
 		ibcHooksModule,
 		cronModule,
+		autolp.NewAppModule(appCodec, app.AutolpKeeper),
         globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
         lockup.NewAppModule(*app.LockupKeeper, app.AccountKeeper, app.BankKeeper),
         incentives.NewAppModule(*app.IncentivesKeeper, app.AccountKeeper, app.EpochsKeeper),
@@ -1116,7 +1140,8 @@ func New(
         consensusparamtypes.ModuleName,
         epochstypes.ModuleName,
         lockuptypes.ModuleName,
-        incentivestypes.ModuleName,
+		incentivestypes.ModuleName,
+		autolptypes.ModuleName,
 
 
 	)
@@ -1162,7 +1187,8 @@ func New(
         consensusparamtypes.ModuleName,
         epochstypes.ModuleName,
         lockuptypes.ModuleName,
-        incentivestypes.ModuleName,
+		incentivestypes.ModuleName,
+		autolptypes.ModuleName,
 
 	)
 
@@ -1701,6 +1727,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
 	paramsKeeper.Subspace(lockuptypes.ModuleName).WithKeyTable(lockuptypes.ParamKeyTable())
 	paramsKeeper.Subspace(incentivestypes.ModuleName).WithKeyTable(incentivestypes.ParamKeyTable())
+
+    // autolp currently has no param subspace
 
 
 
