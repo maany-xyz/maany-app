@@ -19,7 +19,7 @@ func NewMsgServerImpl(k Keeper) types.MsgServer { return msgServer{k} }
 
 // RegisterICA opens an ICA channel by registering an interchain account.
 func (m msgServer) RegisterICA(goCtx context.Context, msg *types.MsgRegisterICA) (*types.MsgRegisterICAResponse, error) {
-    if msg.Authority != m.authority {
+    if !m.isAuthorized(goCtx, msg.Authority) {
         return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "invalid authority; expected %s", m.authority)
     }
     ctx := sdk.UnwrapSDKContext(goCtx)
@@ -40,7 +40,7 @@ func (m msgServer) RegisterICA(goCtx context.Context, msg *types.MsgRegisterICA)
 
 // SubmitICATx executes msgs on the host chain from the ICA.
 func (m msgServer) SubmitICATx(goCtx context.Context, msg *types.MsgSubmitICATx) (*types.MsgSubmitICATxResponse, error) {
-    if msg.Authority != m.authority {
+    if !m.isAuthorized(goCtx, msg.Authority) {
         return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "invalid authority; expected %s", m.authority)
     }
     ctx := sdk.UnwrapSDKContext(goCtx)
@@ -79,4 +79,29 @@ func (m msgServer) SubmitICATx(goCtx context.Context, msg *types.MsgSubmitICATx)
     channelID, _ := m.icaControllerKeeper.GetActiveChannelID(ctx, msg.ConnectionId, portID)
 
     return &types.MsgSubmitICATxResponse{SequenceId: resp.Sequence, Channel: channelID}, nil
+}
+
+// isAuthorized returns true if addr equals module authority or is on the allowlist.
+func (m msgServer) isAuthorized(goCtx context.Context, addr string) bool {
+    if addr == m.authority { return true }
+    ctx := sdk.UnwrapSDKContext(goCtx)
+    params := m.GetParams(ctx)
+    for _, a := range params.AllowedSubmitters {
+        if a == addr { return true }
+    }
+    return false
+}
+
+// UpdateParams updates module parameters; allowed for module authority or any
+// address present in the current allowlist.
+func (m msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+    if !m.isAuthorized(goCtx, msg.Authority) {
+        return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "invalid authority; expected %s or allowed submitter", m.authority)
+    }
+    if err := msg.Params.Validate(); err != nil {
+        return nil, err
+    }
+    ctx := sdk.UnwrapSDKContext(goCtx)
+    m.SetParams(ctx, msg.Params)
+    return &types.MsgUpdateParamsResponse{}, nil
 }

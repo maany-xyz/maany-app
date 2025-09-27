@@ -38,6 +38,11 @@
     "authz": {
       "authorization": []
     },
+    "autolp": {
+      "params": {
+        "allowed_submitters": []
+      }
+    },
     "bank": {
       "params": {
         "send_enabled": [],
