@@ -710,17 +710,7 @@ func New(
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
-	// autolp keeper (uses transfer wrapper and interchaintxs query)
-    app.AutolpKeeper = autolpkeeper.NewKeeper(
-        appCodec,
-        keys[autolptypes.StoreKey],
-        app.GetSubspace(autolptypes.ModuleName),
-        app.TransferKeeper,
-        app.InterchainTxsKeeper,
-        app.ICAControllerKeeper,
-        icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
-        authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-    )
+
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
@@ -738,6 +728,18 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
+
+	// autolp keeper (uses transfer wrapper and interchaintxs query); depends on ICAControllerKeeper
+    app.AutolpKeeper = autolpkeeper.NewKeeper(
+        appCodec,
+        keys[autolptypes.StoreKey],
+        app.GetSubspace(autolptypes.ModuleName),
+        app.TransferKeeper,
+        app.InterchainTxsKeeper,
+        app.ICAControllerKeeper,
+        icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
+        authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+    )
 
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
@@ -963,14 +965,11 @@ func New(
 
     icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 
-    // Build ICA controller stack: combine interchaintxs and autolp IBC modules, then wrap with ICA controller middleware.
+    // Build ICA controller stack using only autolp IBC module under the controller middleware.
     var icaControllerStack ibcporttypes.IBCModule
     {
-        base := interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-        // autolp IBC for event hooks
         autolpIBC := autolp.NewIBCModule(app.AutolpKeeper)
-        combined := autolp.CombineIBCModules(base, autolpIBC)
-        icaControllerStack = icacontroller.NewIBCMiddleware(combined, app.ICAControllerKeeper)
+        icaControllerStack = icacontroller.NewIBCMiddleware(autolpIBC, app.ICAControllerKeeper)
     }
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
@@ -997,7 +996,6 @@ func New(
     ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
         AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
         AddRoute(ibctransfertypes.ModuleName, app.TransferStack).
-        AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
         AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
         AddRoute(ccvconsumertypes.ModuleName, consumerModule)
     app.IBCKeeper.SetRouter(ibcRouter)
@@ -1075,9 +1073,10 @@ func New(
         epochstypes.ModuleName,
         lockuptypes.ModuleName,
         incentivestypes.ModuleName,
-		ibctransfertypes.ModuleName,
-		authtypes.ModuleName,
-		authz.ModuleName,
+        autolptypes.ModuleName,
+        ibctransfertypes.ModuleName,
+        authtypes.ModuleName,
+        authz.ModuleName,
 		banktypes.ModuleName,
 		crisistypes.ModuleName,
 		feegrant.ModuleName,
@@ -1094,17 +1093,17 @@ func New(
 		adminmoduletypes.ModuleName,
 		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
-		pfmtypes.ModuleName,
-		crontypes.ModuleName,
+        pfmtypes.ModuleName,
+        crontypes.ModuleName,
 
 
-		globalfee.ModuleName,
+        globalfee.ModuleName,
 
 
-		consensusparamtypes.ModuleName,
+        consensusparamtypes.ModuleName,
 
 
-	)
+    )
 
     app.mm.SetOrderEndBlockers(
 

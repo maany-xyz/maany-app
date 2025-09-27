@@ -2,12 +2,14 @@ package autolp
 
 import (
     "errors"
+    "strings"
 
     sdk "github.com/cosmos/cosmos-sdk/types"
     capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
     channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
     porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
     ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+    icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
     "github.com/maany-xyz/maany-app/x/autolp/keeper"
 )
@@ -72,6 +74,11 @@ func (c combinedIBC) OnChanOpenTry(ctx sdk.Context, order channeltypes.Order, co
     return c.b.OnChanOpenTry(ctx, order, conns, portID, channelID, cap, cp, v)
 }
 func (c combinedIBC) OnChanOpenAck(ctx sdk.Context, portID, channelID, counterPartyChannelID, counterpartyVersion string) error {
+    owner := strings.TrimPrefix(portID, icatypes.ControllerPortPrefix)
+    if strings.HasPrefix(owner, "autolp.") {
+        // Route autolp-owned ports only to autolp IBC module
+        return c.b.OnChanOpenAck(ctx, portID, channelID, counterPartyChannelID, counterpartyVersion)
+    }
     if err := c.a.OnChanOpenAck(ctx, portID, channelID, counterPartyChannelID, counterpartyVersion); err != nil { return err }
     return c.b.OnChanOpenAck(ctx, portID, channelID, counterPartyChannelID, counterpartyVersion)
 }
@@ -88,15 +95,25 @@ func (c combinedIBC) OnChanCloseConfirm(ctx sdk.Context, portID, channelID strin
     return c.b.OnChanCloseConfirm(ctx, portID, channelID)
 }
 func (c combinedIBC) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
-    // if first returns success ack, still forward to b? For safety, return first and ignore b.
+    owner := strings.TrimPrefix(packet.DestinationPort, icatypes.ControllerPortPrefix)
+    if strings.HasPrefix(owner, "autolp.") {
+        return c.b.OnRecvPacket(ctx, packet, relayer)
+    }
     return c.a.OnRecvPacket(ctx, packet, relayer)
 }
 func (c combinedIBC) OnAcknowledgementPacket(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+    owner := strings.TrimPrefix(packet.SourcePort, icatypes.ControllerPortPrefix)
+    if strings.HasPrefix(owner, "autolp.") {
+        return c.b.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+    }
     if err := c.a.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer); err != nil { return err }
     return c.b.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
 func (c combinedIBC) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+    owner := strings.TrimPrefix(packet.SourcePort, icatypes.ControllerPortPrefix)
+    if strings.HasPrefix(owner, "autolp.") {
+        return c.b.OnTimeoutPacket(ctx, packet, relayer)
+    }
     if err := c.a.OnTimeoutPacket(ctx, packet, relayer); err != nil { return err }
     return c.b.OnTimeoutPacket(ctx, packet, relayer)
 }
-

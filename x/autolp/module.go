@@ -1,6 +1,7 @@
 package autolp
 
 import (
+    "context"
     "encoding/json"
 
     abci "github.com/cometbft/cometbft/abci/types"
@@ -11,7 +12,9 @@ import (
     sdk "github.com/cosmos/cosmos-sdk/types"
     "github.com/cosmos/cosmos-sdk/types/module"
     "github.com/grpc-ecosystem/grpc-gateway/runtime"
+    "github.com/spf13/cobra"
 
+    autolpcli "github.com/maany-xyz/maany-app/x/autolp/client/cli"
     "github.com/maany-xyz/maany-app/x/autolp/keeper"
     "github.com/maany-xyz/maany-app/x/autolp/types"
 )
@@ -42,7 +45,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-    // no-op for now; we defined QueryServer in Go
+    // No grpc-gateway bindings generated for autolp; CLI and gRPC cover queries.
     _ = clientCtx
     _ = mux
 }
@@ -94,3 +97,15 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 
 // Ensure it satisfies interfaces
 var _ module.AppModuleBasic = AppModuleBasic{}
+
+// GetQueryCmd returns the root query command for autolp with subcommands.
+func (AppModuleBasic) GetQueryCmd() *cobra.Command {
+    return autolpcli.GetQueryCmd(types.StoreKey)
+}
+
+// BeginBlock triggers periodic tasks such as ensuring ICA handshake is
+// initiated based on module parameters.
+func (am AppModule) BeginBlock(ctx context.Context) error {
+    am.keeper.EnsureICAIfDue(sdk.UnwrapSDKContext(ctx))
+    return nil
+}

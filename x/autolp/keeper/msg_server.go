@@ -27,6 +27,8 @@ func (m msgServer) CreateAutoLP(goCtx context.Context, msg *types.MsgCreateAutoL
     if !msg.Amount.IsValid() || msg.Amount.IsZero() {
         return nil, fmt.Errorf("invalid amount: %s", msg.Amount)
     }
+    ctx := sdk.UnwrapSDKContext(goCtx)
+    m.Logger(ctx).Info("MsgCreateAutoLP", "from", msg.FromAddress, "connection_id", msg.ConnectionId, "ica_id", msg.InterchainAccountId, "channel", msg.TransferChannel, "amount", msg.Amount.String())
     // Resolve ICA address from interchaintxs keeper
     icaResp, err := m.interchainQuery.InterchainAccountAddress(goCtx, &ictxtypes.QueryInterchainAccountAddressRequest{
         OwnerAddress:        msg.FromAddress,
@@ -34,6 +36,7 @@ func (m msgServer) CreateAutoLP(goCtx context.Context, msg *types.MsgCreateAutoL
         InterchainAccountId: msg.InterchainAccountId,
     })
     if err != nil {
+        m.Logger(ctx).Error("Query ICA address failed", "error", err)
         return nil, err
     }
 
@@ -54,9 +57,10 @@ func (m msgServer) CreateAutoLP(goCtx context.Context, msg *types.MsgCreateAutoL
 
     resp, err := m.transferKeeper.Transfer(goCtx, transferMsg)
     if err != nil {
+        m.Logger(ctx).Error("ICS-20 transfer failed", "error", err)
         return nil, err
     }
-
+    m.Logger(ctx).Info("ICS-20 transfer submitted", "sequence", resp.SequenceId, "channel", resp.Channel)
     return &types.MsgCreateAutoLPResponse{
         IcaAddress: icaResp.InterchainAccountAddress,
         SequenceId: resp.SequenceId,

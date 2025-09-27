@@ -21,17 +21,28 @@
       "accounts": [
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
-          "address": "maanyapp17ykqz4ec2ygt2a9e2jle2egxyr5spnx4kxxpjf",
+          "address": "maanyapp18mqtdppskvm5dq329nzlwg8n4sygm3gc9grnk7",
           "pub_key": null,
           "account_number": "1",
           "sequence": "0"
         },
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
-          "address": "maanyapp1h0c0hra2sy47ejchahpk6szldger7qegu0ntr8",
+          "address": "maanyapp1mkdl69puyq0pca2g4r2xx40g486hqak40j4fsm",
           "pub_key": null,
           "account_number": "2",
           "sequence": "0"
+        },
+        {
+          "@type": "/cosmos.auth.v1beta1.ModuleAccount",
+          "base_account": {
+            "address": "maanyapp1xuj8h55rzgs9jva5m34sltj69yv4fa3r03esp8",
+            "pub_key": null,
+            "account_number": "0",
+            "sequence": "0"
+          },
+          "name": "autolp",
+          "permissions": []
         }
       ]
     },
@@ -40,7 +51,11 @@
     },
     "autolp": {
       "params": {
-        "allowed_submitters": []
+        "allowed_submitters": [],
+        "ensure_ica_enabled": true,
+        "connection_id": "connection-0",
+        "ica_id": "dex-lp-ica",
+        "ensure_ica_interval": 10
       }
     },
     "bank": {
@@ -50,7 +65,7 @@
       },
       "balances": [
         {
-          "address": "maanyapp17ykqz4ec2ygt2a9e2jle2egxyr5spnx4kxxpjf",
+          "address": "maanyapp18mqtdppskvm5dq329nzlwg8n4sygm3gc9grnk7",
           "coins": [
             {
               "denom": "uapp",
@@ -59,7 +74,16 @@
           ]
         },
         {
-          "address": "maanyapp1h0c0hra2sy47ejchahpk6szldger7qegu0ntr8",
+          "address": "maanyapp1mkdl69puyq0pca2g4r2xx40g486hqak40j4fsm",
+          "coins": [
+            {
+              "denom": "uapp",
+              "amount": "1000000000000"
+            }
+          ]
+        },
+        {
+          "address": "maanyapp1xuj8h55rzgs9jva5m34sltj69yv4fa3r03esp8",
           "coins": [
             {
               "denom": "uapp",
@@ -71,7 +95,7 @@
       "supply": [
         {
           "denom": "uapp",
-          "amount": "2000000000000"
+          "amount": "3000000000000"
         }
       ],
       "denom_metadata": [

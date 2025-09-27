@@ -24,6 +24,7 @@ func (m msgServer) RegisterICA(goCtx context.Context, msg *types.MsgRegisterICA)
     }
     ctx := sdk.UnwrapSDKContext(goCtx)
     owner := m.ownerString(msg.InterchainAccountId)
+    m.Logger(ctx).Info("MsgRegisterICA", "authority", msg.Authority, "connection_id", msg.ConnectionId, "ica_id", msg.InterchainAccountId, "owner", owner, "ordering", msg.Ordering)
 
     // empty version uses default, ordering passed through
     resp, err := m.icaControllerMsgServer.RegisterInterchainAccount(ctx, &icacontrollertypes.MsgRegisterInterchainAccount{
@@ -33,8 +34,10 @@ func (m msgServer) RegisterICA(goCtx context.Context, msg *types.MsgRegisterICA)
         Ordering:     channeltypes.Order(msg.Ordering),
     })
     if err != nil {
+        m.Logger(ctx).Error("RegisterInterchainAccount failed", "error", err)
         return nil, err
     }
+    m.Logger(ctx).Info("RegisterInterchainAccount submitted", "port_id", resp.PortId, "channel_id", resp.ChannelId)
     return &types.MsgRegisterICAResponse{ChannelId: resp.ChannelId, PortId: resp.PortId}, nil
 }
 
@@ -55,6 +58,7 @@ func (m msgServer) SubmitICATx(goCtx context.Context, msg *types.MsgSubmitICATx)
     cosmosTx := &icatypes.CosmosTx{Messages: msg.Msgs}
     bz, err := m.cdc.Marshal(cosmosTx)
     if err != nil {
+        m.Logger(ctx).Error("Marshal CosmosTx failed", "error", err)
         return nil, err
     }
 
@@ -71,6 +75,7 @@ func (m msgServer) SubmitICATx(goCtx context.Context, msg *types.MsgSubmitICATx)
         RelativeTimeout: uint64(time.Duration(msg.TimeoutSeconds) * time.Second),
     })
     if err != nil {
+        m.Logger(ctx).Error("ICA SendTx failed", "error", err)
         return nil, err
     }
 
@@ -78,6 +83,7 @@ func (m msgServer) SubmitICATx(goCtx context.Context, msg *types.MsgSubmitICATx)
     portID, _ := icatypes.NewControllerPortID(owner)
     channelID, _ := m.icaControllerKeeper.GetActiveChannelID(ctx, msg.ConnectionId, portID)
 
+    m.Logger(ctx).Info("ICA SendTx submitted", "sequence", resp.Sequence, "channel", channelID)
     return &types.MsgSubmitICATxResponse{SequenceId: resp.Sequence, Channel: channelID}, nil
 }
 

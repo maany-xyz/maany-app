@@ -12,18 +12,18 @@
 package main
 
 import (
-    "flag"
-    "fmt"
+	"flag"
+	"fmt"
 
-    sdk "github.com/cosmos/cosmos-sdk/types"
-    authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 func main() {
     var (
         module    = flag.String("module", "autolp", "module account name (e.g. autolp)")
-        prefix    = flag.String("prefix", "maany", "bech32 account address prefix")
-        pubprefix = flag.String("pubprefix", "maanypub", "bech32 account pubkey prefix")
+        prefix    = flag.String("prefix", "maanyapp", "bech32 account address prefix")
+        pubprefix = flag.String("pubprefix", "maanyapppub", "bech32 account pubkey prefix")
     )
     flag.Parse()
 
