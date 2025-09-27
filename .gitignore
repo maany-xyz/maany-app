@@ -13,3 +13,6 @@ vendor/
 # (optionally Windows binary)
 /maanyappd.exe
 local_net/.maanyappd/
+#.go build caches created when overriding GOCACHE/GOMODCACHE locally
+.gocache/
+.gomodcache/
