@@ -358,6 +358,7 @@ var (
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 		crontypes.ModuleName:                          nil,
+		autolptypes.ModuleName:                        nil,
 
 
 
@@ -1618,9 +1619,12 @@ func (app *App) BlockedAddrs() map[string]bool {
 
 
 
-	bankBlockedAddrs := app.ModuleAccountAddrs()
-	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
-		ccvconsumertypes.ConsumerToSendToProviderName).String())
+    bankBlockedAddrs := app.ModuleAccountAddrs()
+    // Allow these module accounts to receive tokens via bank sends when needed.
+    delete(bankBlockedAddrs, authtypes.NewModuleAddress(
+        ccvconsumertypes.ConsumerToSendToProviderName).String())
+    delete(bankBlockedAddrs, authtypes.NewModuleAddress(
+        autolptypes.ModuleName).String())
 
 	return bankBlockedAddrs
 }
