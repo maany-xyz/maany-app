@@ -15,6 +15,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
     registry.RegisterImplementations(
         (*sdk.Msg)(nil),
         &MsgCreateAutoLP{},
+        &MsgRegisterICA{},
+        &MsgSubmitICATx{},
+        &MsgUpdateParams{},
     )
     msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
@@ -23,4 +26,3 @@ var (
     Amino     = codec.NewLegacyAmino()
     ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 )
-

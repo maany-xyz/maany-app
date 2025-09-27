@@ -3,6 +3,7 @@ syntax = "proto3";
 package maany.autolp.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
 
@@ -10,5 +11,11 @@ option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
 message Params {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
-}
 
+  // allowed_submitters are addresses permitted to submit autolp ICA actions
+  // directly (bypassing governance). The module's built-in authority (gov/admin
+  // module address) is always permitted in addition to this allowlist.
+  repeated string allowed_submitters = 1 [
+    (cosmos_proto.scalar) = "cosmos.AddressString"
+  ];
+}

@@ -1,107 +1,177 @@
-# autolp Module components & testing
+# autolp module
 
-1. IBC hooks for autolp
+Overview
 
-- x/autolp/ibc_module.go
-  - NewIBCModule(keeper.Keeper) implements porttypes.IBCModule with:
-    - OnChanOpenAck → keeper.HandleChanOpenAck
-    - OnAcknowledgementPacket → keeper.HandleAcknowledgement
-    - OnTimeoutPacket → keeper.HandleTimeout
-    - OnRecvPacket returns an error acknowledgement (no inbound ICA packets expected here).
-  - CombineIBCModules(a, b) returns an IBCModule that forwards to both modules in order; we use it to invoke both interchaintxs’ and autolp’s handlers.
+- autolp is a controller-side module that orchestrates liquidity provisioning on a remote DEX chain via Interchain Accounts (ICA) and funding via ICS-20 transfers.
+- It does not execute DEX logic locally. Instead it packages host-chain messages (protobuf Any) into an ICA packet; the host (DEX) chain executes them (e.g., Osmosis GAMM messages).
 
-2. Keeper event emitters
+High-level architecture
 
-- x/autolp/keeper/keeper.go
-  - HandleChanOpenAck: emits autolp_ica_chan_open_ack event.
-  - HandleAcknowledgement: emits autolp_ica_ack event.
-  - HandleTimeout: emits autolp_ica_timeout event.
+- Controller (this chain):
+  - Register an ICA over an IBC connection to the DEX (ICS-27 channel).
+  - Fund the ICA on the DEX via ICS-20 (transfer channel).
+  - Submit host-chain messages (as Any) for the ICA to execute on the DEX.
+- Host (DEX chain):
+  - Must have icahost enabled and allow the target message type URLs.
+  - Executes messages under the ICA address.
 
-3. App wiring (router)
+Messages (tx)
 
-- app/app.go
-  - Built the controller stack by combining interchaintxs and autolp IBC modules, then wrapping with icacontroller middleware:
-    - base := interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-    - autolpIBC := autolp.NewIBCModule(app.AutolpKeeper)
-    - combined := autolp.CombineIBCModules(base, autolpIBC)
-    - icaControllerStack := icacontroller.NewIBCMiddleware(combined, app.ICAControllerKeeper)
-  - Router still routes icacontroller/ interchaintxs ports to icaControllerStack.
+- MsgRegisterICA
 
-How the process works
+  - authority, connection_id, interchain_account_id, ordering (ORDER_ORDERED recommended)
+  - Opens the ICS-27 ICA channel; the relayer completes the handshake.
 
-- Register ICA (autolp.MsgRegisterICA, authority-gated):
-  - Opens the ICS‑27 channel via ICA controller; relayer completes handshake.
-  - autolp IBC module gets OnChanOpenAck and emits “autolp_ica_chan_open_ack”.
-- Resolve ICA address:
-  - autolp.QueryInterchainAccountAddress returns the host chain address (using ICA controller keeper).
-- Fund ICA (autolp.MsgCreateAutoLP):
-  - Sends ICS‑20 transfer over the transfer channel to the ICA address (DEX side).
-- Submit ICA tx (autolp.MsgSubmitICATx, authority-gated):
-  - Takes your host-chain messages as protobuf Any, serializes CosmosTx, calls ICA controller SendTx.
-  - On ack/timeout, autolp emits “autolp_ica_ack” or “autolp_ica_timeout”.
+- MsgCreateAutoLP
 
-Testing the logic
+  - from_address, connection_id, interchain_account_id, transfer_channel, amount (Coin), timeout_seconds
+  - Sends an ICS-20 transfer from from_address to the ICA address on the DEX (funding step).
 
-Prereqs
+- MsgSubmitICATx
 
-- IBC client+connection between your chain and the DEX.
-- Relayer running for ICS‑27 (ICA) and ICS‑20.
-- DEX icahost allow_messages includes your target type URLs (e.g., Osmosis GAMM).
+  - authority, connection_id, interchain_account_id, msgs ([]Any), memo, timeout_seconds
+  - Serializes msgs into icatypes.CosmosTx and sends via ICA. The DEX executes them.
+  - msgs are host-chain messages encoded as protobuf Any (type_url + value). Construction can be done outside this repo.
 
-Steps
+- MsgUpdateParams
+  - authority, params (see Parameters)
+  - Updates module parameters on-chain. Authorized by module authority or any address in the allowlist (see Authorization).
 
-1. Register the ICA
+Queries
 
-- Submit autolp.MsgRegisterICA via governance/admin:
-  - { authority, connection_id, interchain_account_id, ordering: ORDER_ORDERED }
-- Observe events on your chain:
-  - autolp_ica_chan_open_ack with channel details.
-- Check relayer logs for the handshake.
+- Query/Params: returns current module parameters.
+- Query/InterchainAccountAddress: resolves the host-chain ICA address for (connection_id, interchain_account_id).
 
-2. Resolve the ICA address
+Parameters
 
-- Query autolp InterchainAccountAddress:
-  - { connection_id, interchain_account_id }
-- Save the returned ICA address (host chain).
+- Params.allowed_submitters: []string (bech32 account addresses)
+  - Addresses in this allowlist are permitted to submit autolp ICA actions directly.
+  - The module authority (gov/admin module account) is always permitted in addition to this list.
 
-3. Fund the ICA (ICS‑20)
+Authorization model
 
-- Submit autolp.MsgCreateAutoLP:
-  - from_address (user), connection_id, interchain_account_id, transfer_channel, amount, timeout_seconds.
-- Confirm the ICA address holds the IBC denom on the DEX.
+- autolp enforces an authority check for the following messages: MsgRegisterICA, MsgSubmitICATx, MsgUpdateParams.
+- A message is authorized if:
+  1. msg.authority equals the module authority (gov/admin module account), or
+  2. msg.authority is present in Params.allowed_submitters.
+- This allows either governance-based control, a direct operator address (e.g., multisig), or both.
 
-4. Submit ICA tx (e.g., create a pool)
+IBC integration and events
 
-- Outside this repo, build the Any-encoded host message(s) using the DEX protos:
-  - E.g., Any{type_url: “/osmosis.gamm.poolmodels.balancer.v1beta1.MsgCreateBalancerPool”, value: base64 bytes}, Sender set to the ICA address.
-- Submit autolp.MsgSubmitICATx:
-  - { authority, connection_id, interchain_account_id, msgs: [Any...], timeout_seconds }
-- Observe your chain’s events:
-  - On ack: autolp_ica_ack with port/channel/sequence/relayer
-  - On timeout: autolp_ica_timeout
-- Inspect the DEX chain state for pool creation or execution result.
+- autolp registers a lightweight IBC module for ICS-27 callbacks and emits events:
+  - autolp_ica_chan_open_ack: on channel open ack (port_id, channel_id, cp_channel_id, cp_version)
+  - autolp_ica_ack: on packet acknowledgement (src_port, src_channel, sequence, relayer)
+  - autolp_ica_timeout: on packet timeout (src_port, src_channel, sequence, relayer)
+- Controller routing is composed with the existing interchaintxs IBC module and wrapped by the ICA controller middleware.
 
-Event reference
+Typical flow (manual)
 
-- autolp_ica_chan_open_ack
-  - port_id, channel_id, cp_channel_id, cp_version
-- autolp_ica_ack
-  - src_port, src_channel, sequence, relayer
-- autolp_ica_timeout
-  - src_port, src_channel, sequence, relayer
+1. Ensure IBC client+connection exists to the DEX and a relayer is running.
+2. Create an ICS-20 transfer channel between the chains (relayer-driven, one-time).
+3. Register the ICA:
+   - Submit MsgRegisterICA with authority set to the module authority or an address from allowed_submitters.
+   - Relayer completes handshake. Watch autolp_ica_chan_open_ack.
+4. Query the ICA address via Query/InterchainAccountAddress.
+5. Fund the ICA via MsgCreateAutoLP (ICS-20).
+6. Submit host-chain messages via MsgSubmitICATx (e.g., Osmosis GAMM pool create/join), passing msgs as protobuf Any.
+   - The DEX executes messages; watch autolp_ica_ack or autolp_ica_timeout.
 
-Client reference (building Any externally)
+Constructing host-chain messages (Any)
 
-- Use Osmosis protos in your client tool to build a concrete message, set Sender to the ICA address, then:
-  - any, \_ := codectypes.NewAnyWithValue(msg)
-  - Submit: autolptypes.MsgSubmitICATx{ Authority, ConnectionId, InterchainAccountId, Msgs: []\*codectypes.Any{any}, TimeoutSeconds }
+- autolp forwards Any without decoding. Construct them in your client/tool using the host-chain protobufs.
+- Example Any JSON (submitted via gRPC):
+  {
+  "type_url": "/osmosis.gamm.poolmodels.balancer.v1beta1.MsgCreateBalancerPool",
+  "value": "BASE64_PROTO_BYTES"
+  }
+- Sender in host messages should be the ICA address on the DEX chain.
 
-Notes
+Parameters: initialization and updates
 
-- We intentionally did not vendor Osmosis protos into this repo (Option A). Clients construct Anys elsewhere and autolp forwards them.
-- If you want a CLI helper inside this repo later, we can add Osmosis protos and build messages here.
+- Genesis (initial):
+  - In genesis.json under app_state.autolp.params:
+    {
+    "allowed_submitters": [
+    "yourprefix1admin...",
+    "yourprefix1multisig..."
+    ]
+    }
+- On-chain update (MsgUpdateParams):
+  - Authorized by module authority or any address listed in the current allowed_submitters.
+  - Example body:
+    {
+    "@type": "/maany.autolp.v1.MsgUpdateParams",
+    "authority": "yourprefix1admin...",
+    "params": {
+    "allowed_submitters": [
+    "yourprefix1admin...",
+    "yourprefix1multisig..."
+    ]
+    }
+    }
 
-Want me to also add:
+Host-chain requirements
 
-- A tiny Go test/example that submits a dummy Any to verify ack/timeout events (using a mock host or a real devnet)?
-- An optional key-value store in autolp to persist last-seen ack/timeout status per packet (for easy queries)?
+- icahost enabled; Params.allow_messages must include the type URLs you plan to execute (e.g., Osmosis GAMM msgs).
+- A relayer must be running to relay ICS-27 (ICA) and ICS-20 packets.
+
+Security considerations
+
+- Keep allowed_submitters minimal and prefer multisig.
+- Ensure host-chain allowlists are appropriately configured; otherwise SubmitICATx will be rejected.
+- Timeouts are configurable per message; set conservatively to account for relayer latency.
+
+Troubleshooting
+
+- No ICA channel: ensure RegisterICA was submitted and a relayer is active.
+- No funds on DEX: verify ICS-20 transfer channel and MsgCreateAutoLP execution.
+- Host message rejected: check host allow_messages and that Any was encoded with the correct type_url and bytes.
+- Observe emitted events (autolp_ica_*) to follow packet lifecycle.
+
+Samples
+
+- Governance proposal (MsgUpdateParams)
+  - File: update_autolp_params.json
+  {
+    "messages": [
+      {
+        "@type": "/maany.autolp.v1.MsgUpdateParams",
+        "authority": "yourprefix1moduleorauthorizedaddr...",
+        "params": {
+          "allowed_submitters": [
+            "yourprefix1operatoraddr...",
+            "yourprefix1multisigaddr..."
+          ]
+        }
+      }
+    ],
+    "metadata": "",
+    "deposit": "1000000untrn",
+    "title": "Update autolp params",
+    "summary": "Set allowed_submitters for direct ICA actions"
+  }
+
+  - Submit + vote (example):
+    - maanyappd tx gov submit-proposal update_autolp_params.json --from <gov-key> --gas auto --chain-id <chain>
+    - maanyappd tx gov vote <proposal-id> yes --from <gov-key> --chain-id <chain>
+
+- SubmitICATx with Any (JSON body)
+  - Build host-chain Any in your client/tool. Example body to send via gRPC/CLI:
+  {
+    "@type": "/maany.autolp.v1.MsgSubmitICATx",
+    "authority": "yourprefix1operatoraddr...",
+    "connection_id": "connection-0",
+    "interchain_account_id": "dex-lp-ica",
+    "msgs": [
+      {
+        "type_url": "/osmosis.gamm.poolmodels.balancer.v1beta1.MsgCreateBalancerPool",
+        "value": "BASE64_PROTO_BYTES"
+      }
+    ],
+    "memo": "autolp:create-balancer-pool",
+    "timeout_seconds": 300
+  }
+
+  - Notes:
+    - Replace BASE64_PROTO_BYTES with the protobuf-encoded bytes of the host message (e.g., MsgCreateBalancerPool with Sender set to the ICA address on the DEX).
+    - The signer of the tx must match the authority field and be authorized (module authority or in allowed_submitters).

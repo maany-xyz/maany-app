@@ -7,6 +7,7 @@ import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
 import "ibc/core/channel/v1/channel.proto";
+import "maany/autolp/v1/params.proto";
 
 option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
 
@@ -22,6 +23,11 @@ service Msg {
 
   // SubmitICATx submits protobuf Any messages to be executed by the ICA on the DEX.
   rpc SubmitICATx(MsgSubmitICATx) returns (MsgSubmitICATxResponse);
+
+  // UpdateParams updates module parameters. Can be authorized by module authority
+  // (gov/admin module address) or by any address present in the current
+  // Params.allowed_submitters allowlist.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
 message MsgCreateAutoLP {
@@ -97,3 +103,17 @@ message MsgSubmitICATxResponse {
   uint64 sequence_id = 1;
   string channel = 2;
 }
+
+// MsgUpdateParams updates autolp params.
+message MsgUpdateParams {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority must be the module authority (gov/admin module address) or an
+  // address in Params.allowed_submitters.
+  string authority = 1;
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateParamsResponse {}

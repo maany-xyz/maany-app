@@ -8,6 +8,7 @@ import (
     storetypes "cosmossdk.io/store/types"
     "github.com/cosmos/cosmos-sdk/codec"
     sdk "github.com/cosmos/cosmos-sdk/types"
+    paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
     "github.com/maany-xyz/maany-app/x/autolp/types"
     icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
     icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
@@ -18,6 +19,7 @@ import (
 type Keeper struct {
     cdc      codec.BinaryCodec
     storeKey storetypes.StoreKey
+    ps       paramtypes.Subspace
 
     transferKeeper    types.TransferKeeper
     interchainQuery   types.InterchainTxsQueryKeeper
@@ -33,15 +35,20 @@ type Keeper struct {
 func NewKeeper(
     cdc codec.BinaryCodec,
     key storetypes.StoreKey,
+    ps paramtypes.Subspace,
     transferKeeper types.TransferKeeper,
     interchainQuery types.InterchainTxsQueryKeeper,
     icaControllerKeeper icacontrollerkeeper.Keeper,
     icaControllerMsgServer icacontrollertypes.MsgServer,
     authority string,
 ) Keeper {
+    if !ps.HasKeyTable() {
+        ps = ps.WithKeyTable(types.ParamKeyTable())
+    }
     return Keeper{
         cdc:            cdc,
         storeKey:       key,
+        ps:             ps,
         transferKeeper: transferKeeper,
         interchainQuery: interchainQuery,
         icaControllerKeeper:    icaControllerKeeper,
@@ -54,10 +61,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
     return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// params: currently no module parameters are stored; return defaults
-func (k Keeper) GetParams(ctx sdk.Context) types.Params { return types.Params{} }
+// params
+func (k Keeper) GetParams(ctx sdk.Context) types.Params {
+    var p types.Params
+    k.ps.GetParamSet(ctx, &p)
+    return p
+}
 
-func (k Keeper) SetParams(ctx sdk.Context, p types.Params) {}
+func (k Keeper) SetParams(ctx sdk.Context, p types.Params) { k.ps.SetParamSet(ctx, &p) }
 
 // Query server passthrough
 var _ types.QueryServer = Keeper{}

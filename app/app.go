@@ -710,15 +710,16 @@ func New(
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	// autolp keeper (uses transfer wrapper and interchaintxs query)
-	app.AutolpKeeper = autolpkeeper.NewKeeper(
-		appCodec,
-		keys[autolptypes.StoreKey],
-		app.TransferKeeper,
-		app.InterchainTxsKeeper,
-		app.ICAControllerKeeper,
-		icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
+    app.AutolpKeeper = autolpkeeper.NewKeeper(
+        appCodec,
+        keys[autolptypes.StoreKey],
+        app.GetSubspace(autolptypes.ModuleName),
+        app.TransferKeeper,
+        app.InterchainTxsKeeper,
+        app.ICAControllerKeeper,
+        icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
+        authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+    )
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
@@ -1728,7 +1729,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(lockuptypes.ModuleName).WithKeyTable(lockuptypes.ParamKeyTable())
 	paramsKeeper.Subspace(incentivestypes.ModuleName).WithKeyTable(incentivestypes.ParamKeyTable())
 
-    // autolp currently has no param subspace
+    // autolp params
+    paramsKeeper.Subspace(autolptypes.ModuleName).WithKeyTable(autolptypes.ParamKeyTable())
 
 
 
