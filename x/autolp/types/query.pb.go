@@ -195,47 +195,137 @@ func (m *QueryICAAddressResponse) GetInterchainAccountAddress() string {
 	return ""
 }
 
+type QueryLPStateRequest struct {
+	InterchainAccountId string `protobuf:"bytes,1,opt,name=interchain_account_id,json=interchainAccountId,proto3" json:"interchain_account_id,omitempty"`
+	ConnectionId        string `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+}
+
+func (m *QueryLPStateRequest) Reset()         { *m = QueryLPStateRequest{} }
+func (m *QueryLPStateRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLPStateRequest) ProtoMessage()    {}
+func (*QueryLPStateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2776e3a0739cc02a, []int{4}
+}
+func (m *QueryLPStateRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLPStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLPStateRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLPStateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLPStateRequest.Merge(m, src)
+}
+func (m *QueryLPStateRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLPStateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLPStateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLPStateRequest proto.InternalMessageInfo
+
+type QueryLPStateResponse struct {
+	// state is one of: UNINITIALIZED, FUNDING, READY, CREATING_POOL, ACTIVE, PAUSED
+	State string `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+}
+
+func (m *QueryLPStateResponse) Reset()         { *m = QueryLPStateResponse{} }
+func (m *QueryLPStateResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryLPStateResponse) ProtoMessage()    {}
+func (*QueryLPStateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2776e3a0739cc02a, []int{5}
+}
+func (m *QueryLPStateResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLPStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLPStateResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLPStateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLPStateResponse.Merge(m, src)
+}
+func (m *QueryLPStateResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLPStateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLPStateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLPStateResponse proto.InternalMessageInfo
+
+func (m *QueryLPStateResponse) GetState() string {
+	if m != nil {
+		return m.State
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "maany.autolp.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "maany.autolp.v1.QueryParamsResponse")
 	proto.RegisterType((*QueryICAAddressRequest)(nil), "maany.autolp.v1.QueryICAAddressRequest")
 	proto.RegisterType((*QueryICAAddressResponse)(nil), "maany.autolp.v1.QueryICAAddressResponse")
+	proto.RegisterType((*QueryLPStateRequest)(nil), "maany.autolp.v1.QueryLPStateRequest")
+	proto.RegisterType((*QueryLPStateResponse)(nil), "maany.autolp.v1.QueryLPStateResponse")
 }
 
 func init() { proto.RegisterFile("maany/autolp/v1/query.proto", fileDescriptor_2776e3a0739cc02a) }
 
 var fileDescriptor_2776e3a0739cc02a = []byte{
-	// 477 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x52, 0x41, 0x8b, 0xd3, 0x40,
-	0x18, 0x4d, 0xaa, 0x16, 0x1d, 0x15, 0x61, 0x76, 0xb5, 0x35, 0x4a, 0x2a, 0x59, 0xc1, 0x45, 0xd8,
-	0x0c, 0xad, 0x78, 0x11, 0x2f, 0x5d, 0x0f, 0x52, 0xf0, 0xa0, 0x45, 0x14, 0x44, 0x28, 0xd3, 0x64,
-	0xc8, 0x06, 0xb6, 0xf3, 0xcd, 0x66, 0x26, 0x75, 0x6b, 0xe9, 0xc5, 0x93, 0x47, 0xc1, 0x3f, 0xd0,
-	0x9f, 0xb3, 0xb0, 0x97, 0x05, 0x2f, 0x9e, 0x44, 0x5a, 0x0f, 0xfe, 0x0c, 0xc9, 0xcc, 0x94, 0xa5,
-	0x4d, 0xd4, 0xdb, 0xf0, 0xde, 0xfb, 0xde, 0xf7, 0xf2, 0xbd, 0xa0, 0x3b, 0x23, 0x4a, 0xf9, 0x84,
-	0xd0, 0x5c, 0xc1, 0xa1, 0x20, 0xe3, 0x36, 0x39, 0xca, 0x59, 0x36, 0x09, 0x45, 0x06, 0x0a, 0xf0,
-	0x0d, 0x4d, 0x86, 0x86, 0x0c, 0xc7, 0x6d, 0xef, 0x61, 0x04, 0x72, 0x04, 0x92, 0x0c, 0xa9, 0x64,
-	0x46, 0x49, 0xc6, 0xed, 0x21, 0x53, 0xb4, 0x4d, 0x04, 0x4d, 0x52, 0x4e, 0x55, 0x0a, 0xdc, 0x0c,
-	0x7b, 0xdb, 0x09, 0x24, 0xa0, 0x9f, 0xa4, 0x78, 0x59, 0xf4, 0x6e, 0x02, 0x90, 0x1c, 0x32, 0x42,
-	0x45, 0x4a, 0x28, 0xe7, 0xa0, 0xf4, 0x88, 0x5c, 0xb1, 0x9b, 0x69, 0x04, 0xcd, 0xe8, 0xc8, 0xb2,
-	0xc1, 0x36, 0xc2, 0xaf, 0x8a, 0x9d, 0x2f, 0x35, 0xd8, 0x67, 0x47, 0x39, 0x93, 0x2a, 0x78, 0x81,
-	0xb6, 0xd6, 0x50, 0x29, 0x80, 0x4b, 0x86, 0x1f, 0xa3, 0xba, 0x19, 0x6e, 0xba, 0xf7, 0xdc, 0xdd,
-	0xab, 0x9d, 0x46, 0xb8, 0xf1, 0x31, 0xa1, 0x19, 0xd8, 0xbf, 0x78, 0xf2, 0xa3, 0xe5, 0xf4, 0xad,
-	0x38, 0x98, 0xbb, 0xe8, 0x96, 0xb6, 0xeb, 0x3d, 0xeb, 0x76, 0xe3, 0x38, 0x63, 0x72, 0xb5, 0x08,
-	0xef, 0xa0, 0xeb, 0xf0, 0x81, 0xb3, 0x6c, 0x40, 0x0d, 0xae, 0x8d, 0xaf, 0xf4, 0xaf, 0x69, 0xd0,
-	0x6a, 0x71, 0x07, 0xdd, 0x4c, 0xb9, 0x62, 0x59, 0x74, 0x40, 0x53, 0x3e, 0xa0, 0x51, 0x04, 0x39,
-	0x57, 0x83, 0x34, 0x6e, 0xd6, 0xb4, 0x78, 0xeb, 0x9c, 0xec, 0x1a, 0xae, 0x17, 0x17, 0xc6, 0x11,
-	0x70, 0xce, 0xa2, 0xe2, 0x14, 0x85, 0xf6, 0x82, 0x31, 0x3e, 0x07, 0x7b, 0xf1, 0x93, 0xcb, 0x9f,
-	0xe7, 0x2d, 0xe7, 0xf7, 0xbc, 0xe5, 0x04, 0x6f, 0x51, 0xa3, 0x94, 0xd0, 0x7e, 0xf4, 0x53, 0xe4,
-	0x55, 0x6c, 0x5f, 0xcf, 0xdb, 0x2c, 0x45, 0xb0, 0x2e, 0x9d, 0xd3, 0x1a, 0xba, 0xa4, 0x9d, 0xb1,
-	0x42, 0x75, 0x73, 0x1d, 0xbc, 0x53, 0x3a, 0x5b, 0xb9, 0x02, 0xef, 0xfe, 0xbf, 0x45, 0x26, 0x5c,
-	0xd0, 0xfa, 0xf4, 0xed, 0xd7, 0xd7, 0xda, 0x6d, 0xdc, 0x20, 0xd5, 0x2d, 0xe3, 0x53, 0x17, 0x35,
-	0x7b, 0x7f, 0x09, 0x87, 0x1f, 0x54, 0xef, 0x28, 0xd5, 0xe4, 0xed, 0xfe, 0x5f, 0x68, 0x03, 0xbd,
-	0xd7, 0x81, 0xde, 0xe0, 0xd7, 0xa5, 0x40, 0xd3, 0xb5, 0xa2, 0x67, 0x64, 0x5a, 0xd9, 0xe9, 0x8c,
-	0x4c, 0xd7, 0x7a, 0x9b, 0x91, 0x34, 0xa2, 0xab, 0xa1, 0xfd, 0xe7, 0x27, 0x0b, 0xdf, 0x3d, 0x5b,
-	0xf8, 0xee, 0xcf, 0x85, 0xef, 0x7e, 0x59, 0xfa, 0xce, 0xd9, 0xd2, 0x77, 0xbe, 0x2f, 0x7d, 0xe7,
-	0xdd, 0x5e, 0x92, 0xaa, 0x83, 0x7c, 0x18, 0x46, 0x30, 0x32, 0x9b, 0xf7, 0x8e, 0x27, 0x1f, 0xed,
-	0x8b, 0x0a, 0x41, 0x8e, 0x57, 0x49, 0xd4, 0x44, 0x30, 0x39, 0xac, 0xeb, 0xbf, 0xff, 0xd1, 0x9f,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0xde, 0x11, 0x08, 0x00, 0xab, 0x03, 0x00, 0x00,
+	// 552 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xc1, 0x6b, 0x13, 0x4f,
+	0x14, 0xde, 0x4d, 0x7f, 0xcd, 0x4f, 0x47, 0x45, 0x98, 0x46, 0x13, 0x57, 0xd9, 0xc8, 0x56, 0xb1,
+	0x88, 0xdd, 0x21, 0x11, 0x2f, 0xe2, 0x25, 0xed, 0x41, 0x02, 0x3d, 0xd4, 0x28, 0x0a, 0x22, 0x84,
+	0xc9, 0x66, 0xd8, 0x2e, 0x24, 0x33, 0xd3, 0x9d, 0x49, 0x4c, 0x0c, 0xb9, 0x78, 0xf2, 0x28, 0xf8,
+	0x0f, 0xc4, 0xff, 0xa6, 0xe0, 0xa5, 0xe0, 0xc5, 0x93, 0x48, 0xe2, 0xc1, 0x9b, 0xff, 0x82, 0xec,
+	0xcc, 0x2c, 0x65, 0xbb, 0x49, 0xab, 0xb7, 0xd9, 0xf7, 0xbe, 0xf7, 0xbe, 0xef, 0x7b, 0xef, 0xb1,
+	0xe0, 0x66, 0x1f, 0x63, 0x3a, 0x46, 0x78, 0x20, 0x59, 0x8f, 0xa3, 0x61, 0x0d, 0x1d, 0x0e, 0x48,
+	0x3c, 0xf6, 0x79, 0xcc, 0x24, 0x83, 0x57, 0x55, 0xd2, 0xd7, 0x49, 0x7f, 0x58, 0x73, 0xee, 0x07,
+	0x4c, 0xf4, 0x99, 0x40, 0x1d, 0x2c, 0x88, 0x46, 0xa2, 0x61, 0xad, 0x43, 0x24, 0xae, 0x21, 0x8e,
+	0xc3, 0x88, 0x62, 0x19, 0x31, 0xaa, 0x8b, 0x9d, 0x52, 0xc8, 0x42, 0xa6, 0x9e, 0x28, 0x79, 0x99,
+	0xe8, 0xad, 0x90, 0xb1, 0xb0, 0x47, 0x10, 0xe6, 0x11, 0xc2, 0x94, 0x32, 0xa9, 0x4a, 0x44, 0x9a,
+	0x3d, 0xad, 0x86, 0xe3, 0x18, 0xf7, 0x4d, 0xd6, 0x2b, 0x01, 0xf8, 0x2c, 0xe1, 0xdc, 0x57, 0xc1,
+	0x16, 0x39, 0x1c, 0x10, 0x21, 0xbd, 0x3d, 0xb0, 0x91, 0x89, 0x0a, 0xce, 0xa8, 0x20, 0xf0, 0x11,
+	0x28, 0xea, 0xe2, 0x8a, 0x7d, 0xdb, 0xde, 0xba, 0x54, 0x2f, 0xfb, 0xa7, 0xcc, 0xf8, 0xba, 0x60,
+	0xe7, 0xbf, 0xa3, 0xef, 0x55, 0xab, 0x65, 0xc0, 0xde, 0xcc, 0x06, 0xd7, 0x55, 0xbb, 0xe6, 0x6e,
+	0xa3, 0xd1, 0xed, 0xc6, 0x44, 0xa4, 0x44, 0x70, 0x13, 0x5c, 0x61, 0x6f, 0x29, 0x89, 0xdb, 0x58,
+	0xc7, 0x55, 0xe3, 0x8b, 0xad, 0xcb, 0x2a, 0x68, 0xb0, 0xb0, 0x0e, 0xae, 0x45, 0x54, 0x92, 0x38,
+	0x38, 0xc0, 0x11, 0x6d, 0xe3, 0x20, 0x60, 0x03, 0x2a, 0xdb, 0x51, 0xb7, 0x52, 0x50, 0xe0, 0x8d,
+	0x93, 0x64, 0x43, 0xe7, 0x9a, 0xdd, 0xa4, 0x71, 0xc0, 0x28, 0x25, 0x41, 0x32, 0x8a, 0x04, 0xbb,
+	0xa6, 0x1b, 0x9f, 0x04, 0x9b, 0xdd, 0xc7, 0x17, 0x3e, 0xcc, 0xaa, 0xd6, 0xaf, 0x59, 0xd5, 0xf2,
+	0x5e, 0x81, 0x72, 0x4e, 0xa1, 0x31, 0xfd, 0x04, 0x38, 0x4b, 0xd8, 0xb3, 0x7a, 0x2b, 0x39, 0x09,
+	0xa6, 0x8b, 0x37, 0x32, 0x93, 0xdc, 0xdb, 0x7f, 0x2e, 0xb1, 0x24, 0xa9, 0xef, 0x95, 0x96, 0xec,
+	0x7f, 0xb0, 0x54, 0x38, 0xd3, 0xd2, 0x03, 0x50, 0xca, 0x32, 0x1b, 0x3f, 0x25, 0xb0, 0x2e, 0x92,
+	0x80, 0xa1, 0xd2, 0x1f, 0xf5, 0xdf, 0x6b, 0x60, 0x5d, 0xc1, 0xa1, 0x04, 0x45, 0xbd, 0x45, 0xb8,
+	0x99, 0x5b, 0x6f, 0xfe, 0x54, 0x9c, 0x3b, 0x67, 0x83, 0x34, 0xa9, 0x57, 0x7d, 0xff, 0xf5, 0xe7,
+	0xa7, 0xc2, 0x0d, 0x58, 0x46, 0xcb, 0xaf, 0x11, 0x7e, 0xb1, 0x41, 0xa5, 0xb9, 0x62, 0x88, 0xf0,
+	0xde, 0x72, 0x8e, 0xdc, 0x39, 0x39, 0x5b, 0xe7, 0x03, 0x8d, 0xa0, 0x37, 0x4a, 0xd0, 0x4b, 0xf8,
+	0x22, 0x27, 0x68, 0x92, 0x39, 0xc8, 0x29, 0x9a, 0x2c, 0x5d, 0xd4, 0x14, 0x4d, 0x32, 0xcb, 0x98,
+	0xa2, 0x28, 0xc0, 0x69, 0x11, 0xfc, 0x6c, 0x83, 0xff, 0xcd, 0xdc, 0xe1, 0x8a, 0x01, 0x65, 0x0f,
+	0xc2, 0xb9, 0x7b, 0x0e, 0xca, 0xc8, 0x6e, 0x2a, 0xd9, 0xbb, 0xb0, 0x91, 0x97, 0xfd, 0x97, 0x32,
+	0x7b, 0xbc, 0xad, 0x36, 0xbe, 0xf3, 0xf4, 0x68, 0xee, 0xda, 0xc7, 0x73, 0xd7, 0xfe, 0x31, 0x77,
+	0xed, 0x8f, 0x0b, 0xd7, 0x3a, 0x5e, 0xb8, 0xd6, 0xb7, 0x85, 0x6b, 0xbd, 0xde, 0x0e, 0x23, 0x79,
+	0x30, 0xe8, 0xf8, 0x01, 0xeb, 0x6b, 0x9a, 0xed, 0xd1, 0xf8, 0x9d, 0x79, 0x61, 0xce, 0xd1, 0x28,
+	0xa5, 0x95, 0x63, 0x4e, 0x44, 0xa7, 0xa8, 0xfe, 0x24, 0x0f, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff,
+	0x43, 0xbd, 0xef, 0x58, 0xf7, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -254,6 +344,9 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// InterchainAccountAddress resolves the ICA address for an owner/connection/id trio.
 	InterchainAccountAddress(ctx context.Context, in *QueryICAAddressRequest, opts ...grpc.CallOption) (*QueryICAAddressResponse, error)
+	// LPState returns the current lifecycle state for the autolp instance
+	// identified by (connection_id, interchain_account_id).
+	LPState(ctx context.Context, in *QueryLPStateRequest, opts ...grpc.CallOption) (*QueryLPStateResponse, error)
 }
 
 type queryClient struct {
@@ -282,12 +375,24 @@ func (c *queryClient) InterchainAccountAddress(ctx context.Context, in *QueryICA
 	return out, nil
 }
 
+func (c *queryClient) LPState(ctx context.Context, in *QueryLPStateRequest, opts ...grpc.CallOption) (*QueryLPStateResponse, error) {
+	out := new(QueryLPStateResponse)
+	err := c.cc.Invoke(ctx, "/maany.autolp.v1.Query/LPState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// InterchainAccountAddress resolves the ICA address for an owner/connection/id trio.
 	InterchainAccountAddress(context.Context, *QueryICAAddressRequest) (*QueryICAAddressResponse, error)
+	// LPState returns the current lifecycle state for the autolp instance
+	// identified by (connection_id, interchain_account_id).
+	LPState(context.Context, *QueryLPStateRequest) (*QueryLPStateResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -299,6 +404,9 @@ func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsReq
 }
 func (*UnimplementedQueryServer) InterchainAccountAddress(ctx context.Context, req *QueryICAAddressRequest) (*QueryICAAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InterchainAccountAddress not implemented")
+}
+func (*UnimplementedQueryServer) LPState(ctx context.Context, req *QueryLPStateRequest) (*QueryLPStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LPState not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -341,6 +449,24 @@ func _Query_InterchainAccountAddress_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_LPState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLPStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).LPState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/maany.autolp.v1.Query/LPState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).LPState(ctx, req.(*QueryLPStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "maany.autolp.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -352,6 +478,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InterchainAccountAddress",
 			Handler:    _Query_InterchainAccountAddress_Handler,
+		},
+		{
+			MethodName: "LPState",
+			Handler:    _Query_LPState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -488,6 +618,73 @@ func (m *QueryICAAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryLPStateRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLPStateRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLPStateRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConnectionId) > 0 {
+		i -= len(m.ConnectionId)
+		copy(dAtA[i:], m.ConnectionId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConnectionId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.InterchainAccountId) > 0 {
+		i -= len(m.InterchainAccountId)
+		copy(dAtA[i:], m.InterchainAccountId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.InterchainAccountId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLPStateResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLPStateResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLPStateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.State) > 0 {
+		i -= len(m.State)
+		copy(dAtA[i:], m.State)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.State)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -547,6 +744,36 @@ func (m *QueryICAAddressResponse) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.InterchainAccountAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLPStateRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.InterchainAccountId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ConnectionId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLPStateResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.State)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -898,6 +1125,202 @@ func (m *QueryICAAddressResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.InterchainAccountAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLPStateRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLPStateRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLPStateRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InterchainAccountId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.InterchainAccountId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConnectionId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLPStateResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLPStateResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLPStateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field State", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.State = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

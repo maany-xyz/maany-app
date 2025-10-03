@@ -106,6 +106,9 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // BeginBlock triggers periodic tasks such as ensuring ICA handshake is
 // initiated based on module parameters.
 func (am AppModule) BeginBlock(ctx context.Context) error {
-    am.keeper.EnsureICAIfDue(sdk.UnwrapSDKContext(ctx))
+    sdkCtx := sdk.UnwrapSDKContext(ctx)
+    am.keeper.EnsureICAIfDue(sdkCtx)
+    // Drive LP state transitions (FUNDING -> READY, etc.).
+    am.keeper.DriveLPState(sdkCtx)
     return nil
 }

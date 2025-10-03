@@ -1,7 +1,7 @@
 {
   "app_name": "maanyappd",
   "app_version": "4417adf-dirty",
-  "genesis_time": "2025-09-23T15:46:11Z",
+  "genesis_time": "2025-10-03T10:26:49Z",
   "chain_id": "maanyapp-local-1",
   "initial_height": 1,
   "app_hash": null,
@@ -30,6 +30,13 @@
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "address": "maanyapp1mkdl69puyq0pca2g4r2xx40g486hqak40j4fsm",
           "pub_key": null,
+          "account_number": "3",
+          "sequence": "0"
+        },
+        {
+          "@type": "/cosmos.auth.v1beta1.BaseAccount",
+          "address": "maanyapp1psuxwt0mgxc7yfrefalrggp4xzkf2qgdd3d2ry",
+          "pub_key": null,
           "account_number": "2",
           "sequence": "0"
         },
@@ -53,9 +60,28 @@
       "params": {
         "allowed_submitters": [],
         "ensure_ica_enabled": true,
-        "connection_id": "connection-0",
+        "connection_id": "connection-1",
         "ica_id": "dex-lp-ica",
-        "ensure_ica_interval": 10
+        "ensure_ica_interval": 10,
+        "base_local_denom": "uapp",
+        "base_dex_channel": "channel-1",
+        "quote_local_denom": "uusdc",
+        "quote_dex_channel": "channel-1",
+        "create_pool_required": [
+          {
+            "denom": "uapp",
+            "amount": "100000000"
+          },
+          {
+            "denom": "uusdc",
+            "amount": "1000000"
+          }
+        ],
+        "auto_create_pool_enabled": true,
+        "icq_update_period": 10,
+        "ica_tx_timeout_seconds": 600,
+        "transfer_timeout_seconds": 600,
+        "host_account_hrp": "maanydex"
       }
     },
     "bank": {
@@ -70,6 +96,10 @@
             {
               "denom": "uapp",
               "amount": "1000000000000"
+            },
+            {
+              "denom": "uusdc",
+              "amount": "2000000000000"
             }
           ]
         },
@@ -90,12 +120,25 @@
               "amount": "1000000000000"
             }
           ]
+        },
+        {
+          "address": "maanyapp1psuxwt0mgxc7yfrefalrggp4xzkf2qgdd3d2ry",
+          "coins": [
+            {
+              "denom": "uapp",
+              "amount": "1000000000000"
+            }
+          ]
         }
       ],
       "supply": [
         {
           "denom": "uapp",
-          "amount": "3000000000000"
+          "amount": "4000000000000"
+        },
+        {
+          "denom": "uusdc",
+          "amount": "2000000000000"
         }
       ],
       "denom_metadata": [
@@ -136,8 +179,8 @@
         "historical_entries": "100",
         "unbonding_period": "1209600s",
         "soft_opt_out_threshold": "0",
-        "reward_denoms": ["uapp"],
-        "provider_reward_denoms": ["uapp"],
+        "reward_denoms": [],
+        "provider_reward_denoms": [],
         "retry_delay_period": "3600s"
       },
       "provider": {
@@ -156,7 +199,7 @@
           },
           "latest_height": {
             "revision_number": "1",
-            "revision_height": "15"
+            "revision_height": "40"
           },
           "proof_specs": [
             {
@@ -205,9 +248,9 @@
           "allow_update_after_misbehaviour": false
         },
         "consensus_state": {
-          "timestamp": "2025-09-23T15:46:12.980450Z",
+          "timestamp": "2025-10-03T10:26:52.700034Z",
           "root": {
-            "hash": "gAnZDpQ7p/TLaHR2hvTzxN11pFjUY8AOLSXS0bJccfs="
+            "hash": "ywlSkgveHlSSpyXgOyQnIc0M26JOLWqoKzNVLa4Q/TU="
           },
           "next_validators_hash": "36AAA9FDD7018E2D2A238A5BD29D66CFF082A54E03E232485995829EEBA56D4D"
         },

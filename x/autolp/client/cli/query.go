@@ -21,8 +21,8 @@ func GetQueryCmd(_ string) *cobra.Command {
     }
 
     cmd.AddCommand(CmdInterchainAccountAddress())
+    cmd.AddCommand(CmdLPState())
     cmd.AddCommand(CmdQueryParams())
 
     return cmd
 }
-

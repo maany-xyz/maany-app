@@ -4,6 +4,7 @@ package maany.autolp.v1;
 
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/maany-xyz/maany-app/x/autolp/types";
 
@@ -32,4 +33,58 @@ message Params {
   // ensure_ica_interval is the number of blocks between handshake attempts
   // when no active channel is present.
   uint64 ensure_ica_interval = 5;
+
+  // base_host_denom is the DEX-side denom for the base asset the LP will use
+  // (as seen on the host chain where the ICA lives).
+  string base_host_denom = 6;
+
+  // quote_host_denom is the DEX-side denom for the quote asset the LP will use
+  // (e.g., Noble USDC as ibc/<hash> on the DEX).
+  string quote_host_denom = 7;
+
+  // create_pool_required lists host-side amounts the ICA must hold before the
+  // module attempts to create the pool. Denoms must match host chain denoms.
+  repeated cosmos.base.v1beta1.Coin create_pool_required = 8
+      [(gogoproto.nullable) = false];
+
+  // auto_create_pool_enabled gates the automated pool creation once thresholds
+  // are met (based on ICQ balances on the host).
+  bool auto_create_pool_enabled = 9;
+
+  // icq_update_period is the cadence (in blocks) for polling balances/pool info
+  // on the host chain.
+  uint64 icq_update_period = 10;
+
+  // ica_tx_timeout_seconds is the relative timeout used for ICA SendTx calls.
+  uint64 ica_tx_timeout_seconds = 11;
+
+  // transfer_timeout_seconds is the timeout used for ICS-20 funding transfers.
+  uint64 transfer_timeout_seconds = 12;
+
+  // host_account_hrp is the bech32 human-readable prefix of the host chain
+  // (e.g., the DEX). Used to decode the ICA address to bytes for building
+  // verifiable ICQ keys against the host's bank store.
+  string host_account_hrp = 13;
+
+  // base_local_denom is the controller-side denom for the base asset
+  // (e.g., "uapp" on maanyapp). If create_pool_required lists this denom,
+  // autolp can derive the host ibc denom using base_dex_channel.
+  string base_local_denom = 14;
+
+  // base_dex_channel is the DEX-side transfer channel ID paired with the
+  // controller's transfer channel to maanyapp. Used to derive the DEX-side
+  // ibc denom for base_local_denom as:
+  //   ibc/sha256("transfer/" + base_dex_channel + "/" + base_local_denom)
+  string base_dex_channel = 15;
+
+  // quote_local_denom is the source-chain denom for the quote asset
+  // (e.g., "uusdc" on Noble). If create_pool_required lists this denom,
+  // autolp can derive the host ibc denom using quote_dex_channel.
+  string quote_local_denom = 16;
+
+  // quote_dex_channel is the DEX-side transfer channel ID paired with the
+  // source chain for the quote asset (e.g., Noble). Used to derive the
+  // DEX-side ibc denom for quote_local_denom as:
+  //   ibc/sha256("transfer/" + quote_dex_channel + "/" + quote_local_denom)
+  string quote_dex_channel = 17;
 }

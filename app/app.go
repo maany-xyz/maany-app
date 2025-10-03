@@ -736,6 +736,7 @@ func New(
         app.GetSubspace(autolptypes.ModuleName),
         app.TransferKeeper,
         app.InterchainTxsKeeper,
+        &app.InterchainQueriesKeeper,
         app.ICAControllerKeeper,
         icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
         authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
